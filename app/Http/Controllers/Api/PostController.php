@@ -16,19 +16,45 @@ class PostController extends Controller
      */
     public function index()
     {
-             
-    $posts = Post::with(['category'])->get();
+                
+        $posts = Post::with(['category', 'tags'])->paginate(2);
 
-    $posts = Post::paginate(2);
+    
 
-
-        return response()->json(
-            [
-                'results' => $posts,
-                'success' => true
-            ]
-        );
+            return response()->json(
+                [
+                    'results' => $posts,
+                    'success' => true
+                ]
+            );
     }
+
+            public function show($slug)
+            {
+                $posts = Post::where('slug', '=', $slug)->with(['category', 'tags']) ->first(); 
+
+
+                
+        if ($posts) {
+            return response()->json(
+                [
+                    'result' => $posts,
+                    'success' => true
+                ]
+            );
+        } else {
+            return response()->json(
+                [
+                    'result' => 'Nessun risultato trovato',
+                    'success' => false
+                ]
+            );
+        }
+
+     }
+
+
+   
 
     /**
      * Show the form for creating a new resource.
@@ -57,10 +83,7 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
-        //
-    }
+  
 
     /**
      * Show the form for editing the specified resource.
