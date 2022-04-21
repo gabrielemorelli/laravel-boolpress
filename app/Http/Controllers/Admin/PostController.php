@@ -9,6 +9,7 @@ use App\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Tag;
+use App\Storage;
 
 class PostController extends Controller
 {
@@ -54,10 +55,17 @@ class PostController extends Controller
                 'content' => 'required|min:10',
                 'category_id' => 'nullable|exists:categories,id',
                 'tags' =>   'nullable|exists:tags,id',
+                'image' => 'nullable|image|max:2048'
             ]
         );
 
         $data = $request->all();
+
+        if (isset($data['image'])) {
+            $cover_path = Storage::put('post_covers', $data['image']);
+            $data['cover'] = $cover_path;
+        }
+
 
        
         $slug = Str::slug($data['title']);
@@ -123,11 +131,24 @@ class PostController extends Controller
                 'content' => 'required|min:10',
                 'category_id' => 'nullable|exists:categories,id',
                 'tags' =>   'nullable|exists:tags,id',
+                'image' => 'nullable|image|max:2048'
             
             ]
         );
-
+       
+       
         $data = $request->all();
+
+        if (isset($data['image'])) {
+
+            if($post->cover){
+            Storage::delete($post->cover);
+            }
+
+            $cover_path = Storage::put('post_covers', $data['image']);
+            $data['cover'] = $cover_path;
+        }
+
 
         $slug = Str::slug($data['title']);
 
@@ -143,7 +164,10 @@ class PostController extends Controller
         $post->update($data);
         $post->save();
 
-        $post->tags()->sync($data['tags']);
+        if (isset($data['tags'])) {
+            $post->tags()->sync($data['tags']);
+        }
+        
 
         return redirect()->route('admin.posts.index');
     }
@@ -156,6 +180,11 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+
+        if($post->cover) {
+            Storage::delete($post->cover);
+        }
+      
         $post->delete();
         return redirect()->route('admin.posts.index');
     }

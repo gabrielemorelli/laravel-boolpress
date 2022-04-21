@@ -7,10 +7,17 @@
 
                 <h1>Modifica post</h1>
 
-                <form method="POST" action={{route('admin.posts.update', $post->id)}}>
+                <form method="POST" action={{route('admin.posts.update', $post->id)}} encttpe = "multipart/form-data">
 
                     @csrf
                     @method('PUT')
+
+                    @if ($post->cover)
+                    <p>Immagine attuale</p>
+                    <img class="img-thumbnail" src="{{asset('storage/' . $post->cover)}}" alt="{{$post->title}}">
+                    @endif
+
+
                     <div class="form-group">
                         <label for="category_id">Categoria</label>
                         <select class="form-control" id="category_id" name="category_id">
